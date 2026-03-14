@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smog Sentinel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2563eb" />
+</head>
+<body>
+
+  <header class="main-header">
+    <div>
+      <h1>Smog Sentinel</h1>
+      <p>Pakistan air quality dashboard</p>
+    </div>
+    <div id="profileBadge" class="profile-badge" title="Click to edit health profile">Profile</div>
+  </header>
+
+  <div class="app-grid">
+
+    <section class="controls">
+      <input id="citySearch" type="search" placeholder="Search city (Lahore, Karachi...)" aria-label="Search city" autocomplete="off" />
+      <ul id="suggestions" class="suggestions"></ul>
+      <button id="compareButton" type="button">Compare Cities</button>
+    </section>
+
+    <section id="alertBanner" class="alert-banner hidden"></section>
+
+    <section id="cityCard" class="glass-card">
+      <div class="city-card-header">
+        <h2 id="cityName">Pick a city</h2>
+        <div id="sourceBadge" class="source-badge">—</div>
+      </div>
+      <div class="gauge-wrap">
+        <svg id="aqiGauge" viewBox="0 0 200 115" aria-label="AQI gauge">
+          <path class="gauge-bg" d="M20,110 A80,80 0 0,1 180,110" fill="none" stroke="#e2e8f0" stroke-width="14" stroke-linecap="round"/>
+          <path id="gaugeArc" d="M20,110 A80,80 0 0,1 180,110" fill="none" stroke="#2563eb" stroke-width="14" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="251"/>
+        </svg>
+        <div id="aqiValue" class="aqi-value">--</div>
+        <div id="aqiLevel" class="aqi-level">--</div>
+      </div>
+      <p id="guideline">Select a city to see air quality data.</p>
+    </section>
+
+    <section id="pollutants" class="pollutants"></section>
+
+    <section class="glass-card">
+      <h3>24-Hour AQI Forecast</h3>
+      <div style="position:relative; height:220px; width:100%;">
+        <canvas id="aqiChart"></canvas>
+      </div>
+    </section>
+
+    <section id="safeWindow" class="glass-card">
+      <h3>Safe Window Finder</h3>
+      <div id="safeWindowsList"></div>
+    </section>
+
+    <section class="glass-card">
+      <h3>5-Day AQI Trend</h3>
+      <ol id="trendList" style="margin:0; padding-left:18px;"></ol>
+    </section>
+
+    <section class="glass-card" id="comparePanel">
+      <h3>City Comparison</h3>
+      <div class="compare-controls">
+        <select id="compareCityA"></select>
+        <select id="compareCityB"></select>
+        <button id="runCompare">Run</button>
+      </div>
+      <table id="compareTable"></table>
+      <div style="position:relative; height:260px; max-width:360px; margin:0 auto;">
+        <canvas id="compareRadar"></canvas>
+      </div>
+      <div id="compareWinner" class="winner-badge" style="display:none;"></div>
+    </section>
+
+    <section class="glass-card" id="historySection">
+      <div class="history-header">
+        <h3>AQI History</h3>
+        <span id="historyStats"></span>
+      </div>
+      <div style="position:relative; height:220px; width:100%;">
+        <canvas id="historyChart"></canvas>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Chat Sidebar — sits outside app-grid so it never overlaps content -->
+  <aside class="chat-panel" id="chatSidebar">
+    <h3>
+      AQI Assistant
+      <button onclick="toggleChat()" class="chat-close-btn">✕ Close</button>
+    </h3>
+    <div id="chatHistory"></div>
+    <div id="typingIndicator" class="typing-indicator hidden">Assistant is typing…</div>
+    <div class="quick-questions">
+      <button class="quick-btn">Is it safe to exercise outside?</button>
+      <button class="quick-btn">Should I send my kids to school?</button>
+      <button class="quick-btn">What's causing today's pollution?</button>
+      <button class="quick-btn">When is the best time to go outside?</button>
+    </div>
+    <div class="chat-actions">
+      <input id="chatInput" type="text" placeholder="Ask about the air quality..." />
+      <button id="chatSend">Send</button>
+    </div>
+  </aside>
+
+  <!-- Floating toggle button — hidden when chat is open -->
+  <button id="chat-toggle-btn" onclick="toggleChat()" title="Open chat">💬</button>
+
+  <!-- Health Modal -->
+  <div id="healthModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <h3>Select your health profile</h3>
+      <div class="profile-grid">
+        <button class="profile-choice" data-profile="Healthy Adult">Healthy Adult</button>
+        <button class="profile-choice" data-profile="Child">Child</button>
+        <button class="profile-choice" data-profile="Elderly">Elderly</button>
+        <button class="profile-choice" data-profile="Asthma/Respiratory">Asthma / Respiratory</button>
+        <button class="profile-choice" data-profile="Heart Condition">Heart Condition</button>
+        <button class="profile-choice" data-profile="Pregnant">Pregnant</button>
+      </div>
+      <button id="closeHealthModal" class="primary-btn">Save Profile</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleChat() {
+      const panel = document.getElementById('chatSidebar');
+      const grid  = document.querySelector('.app-grid');
+      const btn   = document.getElementById('chat-toggle-btn');
+      const isOpen = panel.classList.contains('open');
+      panel.classList.toggle('open');
+      grid.classList.toggle('chat-open');
+      document.body.classList.toggle('chat-is-open');
+      btn.textContent = isOpen ? '💬' : '✕';
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="config.js"></script>
+  <script src="api/airQuality.js"></script>
+  <script src="api/geocoding.js"></script>
+  <script src="utils/aqiCalculator.js"></script>
+  <script src="utils/healthGuidelines.js"></script>
+  <script src="utils/pakistanCities.js"></script>
+  <script src="components/chart.js"></script>
+  <script src="components/pollutantCards.js"></script>
+  <script src="components/alertBanner.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
