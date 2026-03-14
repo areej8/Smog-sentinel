@@ -75,9 +75,5 @@ smog-sentinel/
 - Gauge indicator with color-coded level, primary pollutant, and data source.
 - Responsive layout for desktop/tablet/mobile.
 
-## Resume bullets
+## Screenshots
 
-- Built live air quality monitoring dashboard for Pakistani cities with Open-Meteo (no API key)
-- Implemented US EPA AQI calculation algorithm from raw PM2.5 and PM10 concentration values
-- Visualized hourly data and 5-day trends using Chart.js
-- Added city autocomplete and PWA capability for offline caching
