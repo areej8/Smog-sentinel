@@ -43,14 +43,14 @@ Every city load appends `{city, aqi, timestamp}` to localStorage (capped at 30 e
 
 ## Tech Stack
 
-| | Tool | Cost |
-|---|---|---|
-| Frontend | Vanilla HTML / CSS / JS | Free |
-| Air quality data | Open-Meteo Air Quality API | Free, no key |
-| City search | Open-Meteo Geocoding API | Free, no key |
-| Charts | Chart.js (CDN) | Free |
-| AI chat | Groq API — Llama 3.1 8B | Free tier |
-| Hosting | GitHub Pages | Free |
+| | Tool |
+|---|---|
+| Frontend | Vanilla HTML / CSS / JS | 
+| Air quality data | Open-Meteo Air Quality API | 
+| City search | Open-Meteo Geocoding API |
+| Charts | Chart.js (CDN) |
+| AI chat | Groq API — Llama 3.1 8B |
+| Hosting | GitHub Pages |
 
 ---
 
